@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPL Mega Auction Simulator & Ball-by-Ball Analytics | InternsElite</title>
+  <meta name="description" content="A real-time simulation of the IPL player auction system with budget tracking, AI bidding logic, and exploratory data analysis based on 150,000+ ball-by-ball deliveries.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Chart.js for Interactive Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="header-main">
+    <div class="header-container">
+      <div class="brand-wrapper">
+        <div class="brand-logo-badge">🏏</div>
+        <div class="brand-text">
+          <h1>IPL AUCTION SIMULATOR</h1>
+          <p>AIML Minor Project &bull; Soumya Ranjan Padhi</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" aria-label="Main Navigation">
+        <button class="tab-btn active" data-tab="auction" id="tabBtnAuction">
+          <span>⚡</span> Live Auction
+        </button>
+        <button class="tab-btn" data-tab="teams" id="tabBtnTeams">
+          <span>🏆</span> Team Squads
+        </button>
+        <button class="tab-btn" data-tab="players" id="tabBtnPlayers">
+          <span>📋</span> Player Pool
+        </button>
+        <button class="tab-btn" data-tab="analytics" id="tabBtnAnalytics">
+          <span>📊</span> Project Analytics
+        </button>
+      </nav>
+
+      <!-- User Franchise Selector & Sound Toggle -->
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <div class="user-franchise-picker">
+          <label for="userTeamSelect">My Team</label>
+          <select id="userTeamSelect" class="franchise-select">
+            <option value="csk">Chennai Super Kings (CSK)</option>
+            <option value="mi">Mumbai Indians (MI)</option>
+            <option value="rcb">Royal Challengers Bengaluru (RCB)</option>
+            <option value="kkr">Kolkata Knight Riders (KKR)</option>
+            <option value="rr">Rajasthan Royals (RR)</option>
+            <option value="srh">Sunrisers Hyderabad (SRH)</option>
+            <option value="gt">Gujarat Titans (GT)</option>
+            <option value="lsg">Lucknow Super Giants (LSG)</option>
+            <option value="dc">Delhi Capitals (DC)</option>
+            <option value="pbks">Punjab Kings (PBKS)</option>
+          </select>
+        </div>
+
+        <button id="btnSoundToggle" class="icon-btn" title="Toggle Sound Effects">🔊</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Area -->
+  <main class="main-content">
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: LIVE AUCTION ROOM                                      -->
+    <!-- ============================================================== -->
+    <section id="viewAuction" class="tab-view active">
+      <div class="auction-grid">
+        
+        <!-- Live Broadcast Ticker Banner -->
+        <div class="broadcast-bar">
+          <div class="live-indicator">
+            <span class="pulse-dot"></span>
+            <span>MEGA AUCTION STAGE LIVE</span>
+          </div>
+          <div class="broadcast-meta">
+            <span>Purse Per Team: <strong>₹100.00 Cr</strong></span>
+            <span>Squad Limit: <strong>18 - 25 Players</strong></span>
+            <span>Max Overseas: <strong>8 Players</strong></span>
+          </div>
+        </div>
+
+        <!-- Left Column: Active Player Showcase & Bidding Stage -->
+        <div class="auction-stage-column">
+          
+          <div class="player-showcase-card" id="activePlayerCard">
+            <!-- Dynamic Content Rendered by JS -->
+            <div class="player-header">
+              <div class="player-avatar-large" id="playerAvatar">👑</div>
+              <div class="player-identity">
+                <div class="player-tags" id="playerTags">
+                  <span class="tag-badge tag-set">Set 1: Marquee</span>
+                  <span class="tag-badge tag-role">Batsman</span>
+                  <span class="tag-badge tag-country">India</span>
+                </div>
+                <h2 class="player-name" id="playerName">Virat Kohli</h2>
+                <p class="player-bio" id="playerBio">Highest run-scorer in IPL history, dynamic anchor and chase master.</p>
+              </div>
+            </div>
+
+            <!-- Stats Matrix -->
+            <div class="stats-matrix" id="statsMatrix">
+              <div class="stat-box">
+                <div class="stat-label">IPL Matches</div>
+                <div class="stat-val" id="statMatches">252</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">Total Runs</div>
+                <div class="stat-val" id="statRuns">8,004</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">Strike Rate</div>
+                <div class="stat-val" id="statSR">131.9</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">Average</div>
+                <div class="stat-val" id="statAvg">38.6</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">Base Price</div>
+                <div class="stat-val" id="statBasePrice" style="color: var(--ipl-gold);">₹2.00 Cr</div>
+              </div>
+            </div>
+
+            <!-- Bidding Arena Console -->
+            <div class="bidding-arena">
+              <div class="bidding-status-header">
+                <div class="current-bid-wrapper">
+                  <span class="bid-caption">Current Highest Bid</span>
+                  <span class="current-bid-amount" id="currentBidDisplay">₹2.00 Cr</span>
+                </div>
+
+                <!-- 15s Hammer Countdown Timer -->
+                <div class="timer-container">
+                  <div class="timer-box" id="timerBox">
+                    <span class="timer-num" id="timerSeconds">15</span>
+                    <span class="timer-sub">Sec</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Leading Franchise Banner -->
+              <div class="leading-team-banner">
+                <div class="leading-badge">
+                  <div class="team-badge-circle" id="leadingBadgeCircle" style="background: #334155;">--</div>
+                  <div class="leading-info">
+                    <h4 id="leadingTeamName">No Bids Yet</h4>
+                    <p id="leadingTeamSub">Waiting for opening bid</p>
+                  </div>
+                </div>
+                <div id="auctionStatePill" class="tag-badge" style="background: rgba(243, 168, 18, 0.2); color: var(--ipl-gold);">
+                  BIDDING OPEN
+                </div>
+              </div>
+
+              <!-- Bidding Controls for User Team -->
+              <div class="bidding-controls-section">
+                <div class="user-team-action-row">
+                  <button id="btnMainBid" class="btn-primary-bid">
+                    <span>Raise Bid</span>
+                    <strong id="btnBidAmount">+ ₹20 Lakh</strong>
+                  </button>
+
+                  <div class="increment-group">
+                    <button class="btn-inc" data-inc="20">+20 L</button>
+                    <button class="btn-inc" data-inc="50">+50 L</button>
+                    <button class="btn-inc" data-inc="100">+1 Cr</button>
+                    <button class="btn-inc" data-inc="200">+2 Cr</button>
+                  </div>
+                </div>
+
+                <!-- Secondary Gavel & Management Actions -->
+                <div class="secondary-actions-bar">
+                  <button id="btnSellGavel" class="btn-action-alt btn-hammer" title="Hammer Down immediately">
+                    <span>🔨</span> Hammer (Sell)
+                  </button>
+                  <button id="btnPassPlayer" class="btn-action-alt" title="Mark player Unsold">
+                    <span>⏭️</span> Pass (Unsold)
+                  </button>
+                  <button id="btnPauseAuction" class="btn-action-alt">
+                    <span>⏸️</span> Pause
+                  </button>
+                  <button id="btnNextPlayer" class="btn-action-alt">
+                    <span>⏩</span> Next Player
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Right Column: Sidebar (Live Feed & User Team Tracker) -->
+        <div class="auction-sidebar">
+          
+          <!-- User Squad Live Tracker -->
+          <div class="sidebar-panel user-squad-quick">
+            <div class="panel-header">
+              <h3 id="userSquadHeader">🟡 CSK Management</h3>
+              <span id="userSlotsPill" class="tag-badge tag-role">0/25 Slots</span>
+            </div>
+            
+            <div class="quick-purse-stat">
+              <span style="font-size: 0.85rem; color: var(--text-muted);">Remaining Purse:</span>
+              <span class="val" id="userPurseDisplay">₹100.00 Cr</span>
+            </div>
+
+            <div class="purse-bar-track">
+              <div class="purse-bar-fill" id="userPurseBar" style="width: 100%;"></div>
+            </div>
+
+            <div class="squad-count-tags">
+              <span>Overseas: <strong id="userOverseasCount">0 / 8</strong></span>
+              <span>Min Required: <strong>18</strong></span>
+            </div>
+          </div>
+
+          <!-- Live Bidding Stream / Commentary Feed -->
+          <div class="sidebar-panel">
+            <div class="panel-header">
+              <h3><span>🎙️</span> Auctioneer Log</h3>
+              <span style="font-size: 0.75rem; color: var(--text-muted);" id="logCount">Live</span>
+            </div>
+            <div class="log-feed" id="auctionLogFeed">
+              <!-- Logs dynamically prepended here -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: TEAM SQUADS & PURSES (10 FRANCHISES)                    -->
+    <!-- ============================================================== -->
+    <section id="viewTeams" class="tab-view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800;">IPL Franchises & Roster Status</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Click any franchise card to view their full acquired player roster.</p>
+        </div>
+        <button id="btnExportCSV" class="btn-action-alt" style="background: rgba(243, 168, 18, 0.15); border-color: var(--ipl-gold); color: var(--ipl-gold); font-weight: 700;">
+          <span>📥</span> Export Auction Summary (CSV)
+        </button>
+      </div>
+
+      <div class="teams-grid" id="teamsGrid">
+        <!-- 10 Franchises rendered via JS -->
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: PLAYER POOL DATABASE                                    -->
+    <!-- ============================================================== -->
+    <section id="viewPlayers" class="tab-view">
+      <div class="filter-bar">
+        <input type="text" id="playerSearchInput" class="search-input" placeholder="Search by player name or country...">
+        <select id="setFilterSelect" class="filter-select">
+          <option value="all">All Sets</option>
+          <option value="Marquee">Set 1: Marquee</option>
+          <option value="Batsmen">Set 2: Batsmen</option>
+          <option value="All-Rounders">Set 3: All-Rounders</option>
+          <option value="Fast Bowlers">Set 4: Fast Bowlers</option>
+          <option value="Spin Bowlers">Set 5: Spin Bowlers</option>
+          <option value="Wicket-Keepers">Set 6: Wicket-Keepers</option>
+        </select>
+        <select id="roleFilterSelect" class="filter-select">
+          <option value="all">All Roles</option>
+          <option value="Batsman">Batsmen</option>
+          <option value="All-Rounder">All-Rounders</option>
+          <option value="Fast Bowler">Fast Bowlers</option>
+          <option value="Spin Bowler">Spin Bowlers</option>
+          <option value="Wicket-Keeper">Wicket-Keepers</option>
+        </select>
+        <select id="statusFilterSelect" class="filter-select">
+          <option value="all">All Status</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="sold">Sold</option>
+          <option value="unsold">Unsold</option>
+        </select>
+      </div>
+
+      <div class="players-table-card">
+        <div class="table-wrapper">
+          <table class="custom-table" id="playersTable">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Role</th>
+                <th>Set</th>
+                <th>Country</th>
+                <th>Base Price</th>
+                <th>Rating</th>
+                <th>Status</th>
+                <th>Sold To</th>
+                <th>Sold Price</th>
+              </tr>
+            </thead>
+            <tbody id="playersTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: PROJECT ANALYTICS & EDA (MINOR PROJECT REPORT)          -->
+    <!-- ============================================================== -->
+    <section id="viewAnalytics" class="tab-view">
+      
+      <!-- Student Minor Project Header Banner -->
+      <div class="analytics-header-card">
+        <div class="student-credit">
+          <h2>IPL Ball-by-Ball Data Analysis using Python</h2>
+          <p>Exploratory Data Analysis (EDA) on delivery-level IPL datasets (150,000+ records) using Python, Pandas & Matplotlib.</p>
+          <div class="student-meta-badges">
+            <span class="meta-pill">Student: <strong>Soumya Ranjan Padhi</strong></span>
+            <span class="meta-pill">Roll No: <strong>25/AIML-A6/DEC-8399</strong></span>
+            <span class="meta-pill">Program: <strong>AIML with Python (December Batch)</strong></span>
+            <span class="meta-pill">Platform: <strong>Jupyter Notebook & InternsElite</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive EDA Charts Grid -->
+      <div class="charts-grid">
+        
+        <!-- Chart 1: Top Batsmen -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Top 10 Batsmen by Total Runs</h3>
+            <p>All-time run accumulation led by Virat Kohli and Suresh Raina.</p>
+          </div>
+          <div class="chart-container-inner">
+            <canvas id="chartTopBatsmen"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Top Teams by Runs -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Top 10 Teams by Total Runs</h3>
+            <p>Aggregated franchise run production across tournament history.</p>
+          </div>
+          <div class="chart-container-inner">
+            <canvas id="chartTopTeams"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Boundaries (4s vs 6s) -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Top Teams - Boundaries (4s & 6s)</h3>
+            <p>Comparative analysis of boundary clearing volume by franchise.</p>
+          </div>
+          <div class="chart-container-inner">
+            <canvas id="chartBoundaries"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 4: Over Progression Trend -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Over-wise Scoring Progression (Overs 1 - 20)</h3>
+            <p>Run acceleration curve demonstrating sharp death overs explosion.</p>
+          </div>
+          <div class="chart-container-inner">
+            <canvas id="chartOverTrend"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 5: Innings Split -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Runs by Innings Distribution</h3>
+            <p>Comparison between 1st Innings setting vs 2nd Innings chasing.</p>
+          </div>
+          <div class="chart-container-inner">
+            <canvas id="chartInningsSplit"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 6: Extras Breakdown -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>IPL Extras Conceded Breakdown</h3>
+            <p>Frequency of Wides, Leg Byes, No Balls, and Byes.</p>
+          </div>
+          <div class="chart-container-inner">
+            <canvas id="chartExtras"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Minor Project Findings Summary -->
+      <div class="chart-card" style="margin-top: 1.5rem;">
+        <div class="chart-header">
+          <h3>Key Findings & Conclusions from Dataset</h3>
+          <p>Insights derived from data cleaning, feature engineering, and delivery-level analysis.</p>
+        </div>
+        <div class="findings-grid">
+          <div class="finding-item">
+            <h4>⚡ Death Overs Acceleration</h4>
+            <p>Overs 16–20 account for the highest run rate in T20s, averaging over 10.5 runs per over with high boundary concentration.</p>
+          </div>
+          <div class="finding-item">
+            <h4>🏏 Powerplay Dominance</h4>
+            <p>Teams scoring 55+ runs in overs 1–6 have a significantly higher match win probability due to fielding restrictions.</p>
+          </div>
+          <div class="finding-item">
+            <h4>💥 Six-Hitting Efficiency</h4>
+            <p>Mumbai Indians and RCB lead total tournament sixes, directly correlating with high team totals above 200.</p>
+          </div>
+          <div class="finding-item">
+            <h4>🎯 Extras Discipline</h4>
+            <p>Wides constitute over 54% of all extras conceded, adding unintended runs and extra deliveries to bowling teams.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Team Squad Modal -->
+  <div class="modal-overlay" id="squadModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalTeamTitle">Chennai Super Kings Squad</h3>
+        <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="modalSquadBody">
+        <!-- Acquired players list -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Sold Toast Notification -->
+  <div class="sold-celebration-toast" id="soldToast">
+    <span>🔨</span>
+    <span id="soldToastText">SOLD! Virat Kohli to CSK for ₹18.00 Cr!</span>
+  </div>
+
+  <!-- Application Logic -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
