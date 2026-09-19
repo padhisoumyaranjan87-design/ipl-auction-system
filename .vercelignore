@@ -1,0 +1,8 @@
+# Exclude heavy dataset and report files from Vercel deployment bundle
+IPL.csv
+IPL_BallByBall_Cleaned.csv
+IPL_Cleaned.csv
+*.ipynb
+*.docx
+*.pdf
+.git
